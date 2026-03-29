@@ -1,9 +1,12 @@
-from fastapi import FastAPI
-from app.database.database import SessionLocal, get_session, get_connection, engine
-from sqlalchemy.orm import sessionmaker
+from fastapi import FastAPI,Depends
+from app.api.routes import user_info
+from app.database.session import Base, SessionLocal, engine
+from app.database.depends import get_db
+from sqlalchemy.orm import Session
 from sqlalchemy import text 
-
+Base.metadata.create_all(bind=engine)
 app = FastAPI()
+app.include_router(user_info.router)
 # logistic_env\scripts\activate
 
 @app.get("/")
@@ -11,22 +14,10 @@ def root():
     return {"message": "Backend is running 🚀"}
 
 @app.get("/db-test")
-def db_test():
-    with get_session() as session:
-        result = session.execute(text("SELECT 1"))
-        return {"db_test": result.scalar()}
+def db_test(db: Session = Depends(get_db)):
+    result = db.execute(text("SELECT 1"))
+    return {"db_test": result.scalar()}
 
-@app.get("/users")
-def get_users():
-    with get_session() as session:
-        users = session.query(User).all()
-        return [{"id": u.id, "name": u.name, "email": u.email} for u in users]
 
-# ------------------------------
-# Get users via raw SQL
-# ------------------------------
-@app.get("/raw-users")
-def get_raw_users():
-    with get_connection() as conn:
-        result = conn.execute(text("SELECT id, name, email FROM users"))
-        return [dict(row) for row in result]
+
+
