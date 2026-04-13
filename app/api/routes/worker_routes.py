@@ -17,3 +17,4 @@ def get_workers(db: Session = Depends(get_db)):
 @router.get("/available", response_model=list[WorkerResponse])
 def get_available_workers(db: Session = Depends(get_db)):
     return worker_service.get_available_worker(db)
+

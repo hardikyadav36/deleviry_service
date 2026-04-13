@@ -1,0 +1,62 @@
+version: "3.9"
+
+services:
+
+  postgres:
+    image: postgres:15
+    container_name: harddb
+    restart: always
+
+    environment:
+      POSTGRES_USER: localuser
+      POSTGRES_PASSWORD: mypass
+      POSTGRES_DB: logistics_db
+
+    ports:
+      - "5433:5432"
+
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+
+  backend:
+    build: .
+    container_name: fastapi_app
+    restart: always
+
+    working_dir: /app
+
+    command: >
+      sh -c "sleep 5 && uvicorn app.main:app --host 0.0.0.0 --port 8000"
+
+    ports:
+      - "8000:8000"
+
+    depends_on:
+      - postgres
+
+    env_file:
+      - .env
+
+    volumes:
+      - .:/app
+
+
+  worker:
+    build: .
+    container_name: worker_simulator
+    restart: always
+
+    working_dir: /app
+
+    command: python app/worker_simulator.py
+
+    depends_on:
+      - backend
+
+    volumes:
+      - .:/app
+
+
+volumes:
+  postgres_data:

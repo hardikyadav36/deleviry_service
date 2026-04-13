@@ -1,4 +1,4 @@
-from fastapi import FastAPI,Depends
+from fastapi import FastAPI,Depends, WebSocket
 from app.api.routes import user_routes,delivery_routes,worker_routes,order_routes
 from app.database.session import Base, SessionLocal, engine
 from app.database.depends import get_db
@@ -25,6 +25,14 @@ def root():
 def db_test(db: Session = Depends(get_db)):
     result = db.execute(text("SELECT 1"))
     return {"db_test": result.scalar()}
+
+@app.websocket("/ws/{worker_id}")
+async def worker_socket(websocket: WebSocket, worker_id: int):
+    await websocket.accept()
+
+    while True:
+        data = await websocket.receive_json()
+        print(f"Worker {worker_id} location:", data)
 
 
 
