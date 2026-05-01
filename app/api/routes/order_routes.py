@@ -33,18 +33,7 @@ def get_order(order_id: int, db: Session = Depends(get_db)):
 
 # ✅ Assign Worker to Order (Manual trigger)
 @router.post("/{order_id}/assign", response_model=OrderResponse)
-# def assign_worker(order_id: int, db: Session = Depends(get_db)):
-#     order = order_service.get_order_by_id(db, order_id)
 
-#     if not order:
-#         raise HTTPException(status_code=404, detail="Order not found")
-
-#     assigned_order = order_service.assign_worker(db, order)
-
-#     if not assigned_order:
-#         raise HTTPException(status_code=400, detail="No available workers")
-
-#     return assigned_order
 def assign_worker(order_id: int, db: Session = Depends(get_db)):
     return order_service.assign_nearest_worker(db, order_id)
 

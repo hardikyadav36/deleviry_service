@@ -4,7 +4,9 @@ from app.database.session import Base, SessionLocal, engine
 from app.database.depends import get_db
 from sqlalchemy.orm import Session
 from sqlalchemy import text 
+from app.services.batch_runner_service import run_batches
 
+import asyncio
 
 Base.metadata.create_all(bind=engine)
 app = FastAPI()
@@ -16,7 +18,12 @@ app.include_router(delivery_routes.router)
 app.include_router(worker_routes.router)
 app.include_router(order_routes.router)
 # logistic_env\scripts\activate
+@app.on_event("startup")
+async def start_batch_loop():
+    # db = next(get_db())
+    asyncio.create_task(run_batches())
 
+    
 @app.get("/")
 def root():
     return {"message": "Backend is running 🚀"}
@@ -33,6 +40,11 @@ async def worker_socket(websocket: WebSocket, worker_id: int):
     while True:
         data = await websocket.receive_json()
         print(f"Worker {worker_id} location:", data)
+
+
+
+
+
 
 
 

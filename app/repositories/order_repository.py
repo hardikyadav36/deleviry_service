@@ -1,5 +1,6 @@
 from sqlalchemy.orm import Session
 from app.models.order_model import Order
+from app.services.batch_service import batch_processor
 
 
 def create_order(db: Session, order_data: dict):
@@ -7,6 +8,9 @@ def create_order(db: Session, order_data: dict):
     db.add(order)
     db.commit()
     db.refresh(order)
+
+    batch_processor.add_order(order)
+
     return order
 
 

@@ -26,3 +26,13 @@ def update_worker_location(db: Session, worker_id: int, lat: float, lng: float):
     worker.longitude = lng
     db.commit()
     return worker
+
+
+
+#           -----> For REDIS <-----
+def get_worker_by_id(db: Session, worker_id: int):
+    return db.query(Worker).filter(Worker.id == worker_id).first()
+
+
+def get_workers_by_ids(db: Session, worker_ids: list[int]):
+    return db.query(Worker).filter(Worker.id.in_(worker_ids)).all()

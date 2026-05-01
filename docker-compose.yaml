@@ -6,57 +6,51 @@ services:
     image: postgres:15
     container_name: harddb
     restart: always
-
     environment:
-      POSTGRES_USER: localuser
-      POSTGRES_PASSWORD: mypass
-      POSTGRES_DB: logistics_db
-
+      POSTGRES_USER: POSTGRES_USER
+      POSTGRES_PASSWORD: POSTGRES_PASSWORD
+      POSTGRES_DB: POSTGRES_DB
     ports:
       - "5433:5432"
-
     volumes:
       - postgres_data:/var/lib/postgresql/data
 
+  redis:
+    image: redis:7
+    container_name: redis_geo
+    restart: always
+    ports:
+      - "6379:6379"
+    command: ["redis-server", "--appendonly", "yes"]
 
   backend:
     build: .
     container_name: fastapi_app
     restart: always
-
     working_dir: /app
-
     command: >
       sh -c "sleep 5 && uvicorn app.main:app --host 0.0.0.0 --port 8000"
-
     ports:
       - "8000:8000"
-
     depends_on:
       - postgres
-
+      - redis
     env_file:
       - .env
-
     volumes:
       - .:/app
-
 
   worker:
     build: .
     container_name: worker_simulator
     restart: always
-
     working_dir: /app
-
     command: python app/worker_simulator.py
-
     depends_on:
       - backend
-
+      - redis
     volumes:
       - .:/app
-
 
 volumes:
   postgres_data:
